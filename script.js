@@ -15,24 +15,24 @@ document.getElementById("back-to-calendar-button").addEventListener("click", () 
 });
 
 window.onload = () => {
-  // Recuperar el token de localStorage si ya existe
+  // Intentamos obtener el token desde localStorage
   const storedToken = localStorage.getItem("google_access_token");
 
+  // Si el token ya está guardado, lo utilizamos
   if (storedToken) {
     accessToken = storedToken;
     loadFolders();
-    // Mostrar el botón de "Volver al calendario"
     document.getElementById("back-to-calendar-button").style.display = "inline-block";
   } else {
+    // Si no hay token, procedemos con la autenticación
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
       scope: SCOPES,
       callback: (tokenResponse) => {
+        // Guardamos el token en localStorage
         accessToken = tokenResponse.access_token;
-        // Almacenar el token en localStorage
-        localStorage.setItem("google_access_token", accessToken);
+        localStorage.setItem("google_access_token", accessToken); // Guardamos el token en localStorage
         loadFolders();
-        // Mostrar el botón de "Volver al calendario"
         document.getElementById("back-to-calendar-button").style.display = "inline-block";
       },
     });
