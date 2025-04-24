@@ -10,10 +10,6 @@ document.getElementById("signin-button").addEventListener("click", () => {
   tokenClient.requestAccessToken();
 });
 
-document.getElementById("back-button").addEventListener("click", () => {
-  showCalendar();
-});
-
 window.onload = () => {
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
@@ -62,9 +58,16 @@ function renderCalendar(folders) {
 
   folders.forEach((folder) => {
     const card = document.createElement("div");
-    card.className = "bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200 cursor-pointer";
-    card.innerHTML = `<div class="p-4 text-center text-lg font-semibold">${folder.name}</div>`;
-    card.addEventListener("click", () => loadGallery(folder.id));
+    card.className = "col";
+
+    card.innerHTML = `
+      <div class="card shadow-sm p-3 mb-5 bg-white rounded" onclick="loadGallery('${folder.id}')">
+        <div class="card-body text-center">
+          <h5 class="card-title">${folder.name}</h5>
+        </div>
+      </div>
+    `;
+    
     calendar.appendChild(card);
   });
 }
@@ -90,36 +93,26 @@ async function loadGallery(folderId) {
 
     data.files.forEach((file) => {
       const card = document.createElement("div");
-      card.className = "bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200";
+      card.className = "col";
 
-      const link = document.createElement("a");
-      link.href = file.webViewLink;
-      link.target = "_blank";
-
-      const img = document.createElement("img");
-      img.src = file.thumbnailLink || "https://via.placeholder.com/150";
-      img.alt = file.name;
-      img.className = "w-full h-40 object-cover";
-
-      const caption = document.createElement("div");
-      caption.className = "p-2 text-center text-sm font-medium text-gray-700";
-      caption.innerText = file.name;
-
-      link.appendChild(img);
-      card.appendChild(link);
-      card.appendChild(caption);
+      card.innerHTML = `
+        <div class="card gallery-card">
+          <a href="${file.webViewLink}" target="_blank">
+            <img src="${file.thumbnailLink || 'https://via.placeholder.com/150'}" class="card-img-top" alt="${file.name}">
+          </a>
+          <div class="card-body">
+            <p class="card-text">${file.name}</p>
+          </div>
+        </div>
+      `;
+      
       fileGallery.appendChild(card);
     });
 
     // Ocultamos el calendario y mostramos la galería
-    document.getElementById("calendar").classList.add("hidden");
+    document.getElementById("calendar").classList.add("d-none");
     document.getElementById("gallery").classList.remove("hidden");
   } catch (error) {
     console.error("Error al cargar los archivos: ", error);
   }
-}
-
-function showCalendar() {
-  document.getElementById("calendar").classList.remove("hidden");
-  document.getElementById("gallery").classList.add("hidden");
 }
