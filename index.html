@@ -18,16 +18,14 @@
       </button>
     </div>
 
-    <div class="mb-4">
-      <input
-        type="text"
-        id="search-input"
-        placeholder="🔍 Buscar archivo..."
-        class="w-full border border-gray-300 px-4 py-2 rounded shadow-sm focus:outline-none focus:ring focus:border-blue-300"
-      />
-    </div>
+    <!-- Pantalla de calendario -->
+    <div id="calendar" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6"></div>
 
-    <div id="gallery" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
+    <!-- Pantalla de galería -->
+    <div id="gallery" class="hidden">
+      <button id="back-button" class="bg-gray-500 text-white px-4 py-2 rounded mb-4 hover:bg-gray-600">🔙 Volver al calendario</button>
+      <div id="file-gallery" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
+    </div>
   </div>
 
 </body>
