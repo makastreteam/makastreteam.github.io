@@ -1,17 +1,26 @@
 <!DOCTYPE html>
-<html>
-   <head>
-      <title>Título de mi página web</title>
-   </head>
-   <body>
-      <header>
-         <h1>Titular principal de la página</h1>
-      </header>
-      <main>
-         <h2>Primer Subtítulo de la página</h2>
-         <p>Primer párrafo</p>
-      </main>
-      <footer>
-      </footer>
-   </body>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Galería de Google Drive</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="script.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+
+  <div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold text-center mb-6">Galería de Google Drive</h1>
+
+    <div class="text-center mb-4">
+      <button id="signin-button" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        Iniciar sesión con Google
+      </button>
+    </div>
+
+    <div id="gallery" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
+  </div>
+
+</body>
 </html>
