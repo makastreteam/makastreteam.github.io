@@ -10,6 +10,10 @@ document.getElementById("signin-button").addEventListener("click", () => {
   tokenClient.requestAccessToken();
 });
 
+document.getElementById("back-button").addEventListener("click", () => {
+  showCalendar();
+});
+
 window.onload = () => {
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
@@ -115,4 +119,10 @@ async function loadGallery(folderId) {
   } catch (error) {
     console.error("Error al cargar los archivos: ", error);
   }
+}
+
+function showCalendar() {
+  // Mostramos la vista de calendario y ocultamos la galería
+  document.getElementById("calendar").classList.remove("d-none");
+  document.getElementById("gallery").classList.add("hidden");
 }
