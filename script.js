@@ -1,6 +1,6 @@
 const CLIENT_ID = "36321363025-d2065951vh677c84bn1ofh4dko5fese2.apps.googleusercontent.com";
 const FOLDER_ID = "12W81Xq8P2o7HzHQ_sIYQKIAm7aqa3BX6"; // ID de la carpeta principal
-const SCOPES = "https://www.googleapis.com/auth/drive.file";
+const SCOPES = "https://www.googleapis.com/auth/drive"; // Alcance amplio para poder subir archivos
 
 let tokenClient;
 let accessToken;
@@ -24,7 +24,7 @@ window.onload = () => {
   } else {
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
-      scope: SCOPES,
+      scope: SCOPES,  // Alcance actualizado
       callback: (tokenResponse) => {
         accessToken = tokenResponse.access_token;
         localStorage.setItem("google_access_token", accessToken);
@@ -49,6 +49,7 @@ async function uploadImage(event) {
     return;
   }
 
+  // Creamos el cuerpo de la solicitud para subir la imagen
   const formData = new FormData();
   formData.append("file", file);
 
@@ -73,7 +74,7 @@ async function uploadImage(event) {
     document.getElementById("uploadStatus").innerHTML = `<p class="text-success">¡Imagen subida con éxito!</p>`;
   } catch (error) {
     console.error("Error al subir la imagen: ", error);
-    document.getElementById("uploadStatus").innerHTML = `<p class="text-danger">Hubo un error al subir la imagen.</p>`;
+    document.getElementById("uploadStatus").innerHTML = `<p class="text-danger">Hubo un error al subir la imagen: ${error.message}</p>`;
   }
 }
 
@@ -94,18 +95,22 @@ function buildRequestBody(file) {
 
 // Función para añadir el archivo a la carpeta especificada
 async function addFileToFolder(fileId) {
-  const res = await fetch(
-    `https://www.googleapis.com/drive/v3/files/${fileId}?addParents=${FOLDER_ID}&fields=id,parents`,
-    {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
+  try {
+    const res = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${fileId}?addParents=${FOLDER_ID}&fields=id,parents`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
 
-  const data = await res.json();
-  console.log("Archivo añadido a la carpeta: ", data);
+    const data = await res.json();
+    console.log("Archivo añadido a la carpeta: ", data);
+  } catch (error) {
+    console.error("Error al añadir archivo a la carpeta: ", error);
+  }
 }
 
 async function loadFolders() {
