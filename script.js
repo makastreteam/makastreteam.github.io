@@ -10,7 +10,7 @@ document.getElementById("signin-button").addEventListener("click", () => {
   tokenClient.requestAccessToken();
 });
 
-document.getElementById("back-button").addEventListener("click", () => {
+document.getElementById("back-to-calendar-button").addEventListener("click", () => {
   showCalendar();
 });
 
@@ -21,6 +21,8 @@ window.onload = () => {
   if (storedToken) {
     accessToken = storedToken;
     loadFolders();
+    // Mostrar el botón de "Volver al calendario"
+    document.getElementById("back-to-calendar-button").style.display = "inline-block";
   } else {
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
@@ -30,6 +32,8 @@ window.onload = () => {
         // Almacenar el token en localStorage
         localStorage.setItem("google_access_token", accessToken);
         loadFolders();
+        // Mostrar el botón de "Volver al calendario"
+        document.getElementById("back-to-calendar-button").style.display = "inline-block";
       },
     });
   }
