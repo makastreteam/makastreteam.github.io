@@ -4,6 +4,7 @@ const SCOPES = "https://www.googleapis.com/auth/drive.readonly";
 
 let tokenClient;
 let accessToken;
+let allFiles = [];
 
 document.getElementById("signin-button").addEventListener("click", () => {
   tokenClient.requestAccessToken();
@@ -18,6 +19,12 @@ window.onload = () => {
       loadDriveFiles();
     },
   });
+
+  document.getElementById("search-input").addEventListener("input", (e) => {
+    const query = e.target.value.toLowerCase();
+    const filtered = allFiles.filter(file => file.name.toLowerCase().includes(query));
+    renderGallery(filtered);
+  });
 };
 
 async function loadDriveFiles() {
@@ -26,7 +33,7 @@ async function loadDriveFiles() {
 
   try {
     const res = await fetch(
-      `https://www.googleapis.com/drive/v3/files?q='${FOLDER_ID}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,thumbnailLink,webViewLink)&key=AIzaSyC...`, // Puedes dejar la key vacía si solo usas OAuth
+      `https://www.googleapis.com/drive/v3/files?q='${FOLDER_ID}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,thumbnailLink,webViewLink)&pageSize=1000`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -34,36 +41,42 @@ async function loadDriveFiles() {
       }
     );
     const data = await res.json();
-    gallery.innerHTML = "";
-
-    if (data.files.length === 0) {
-      gallery.innerHTML = "<p class='col-span-full text-center'>No hay archivos para mostrar.</p>";
-      return;
-    }
-
-    data.files.forEach((file) => {
-      const card = document.createElement("div");
-      card.className = "bg-white shadow rounded overflow-hidden";
-
-      const link = document.createElement("a");
-      link.href = file.webViewLink;
-      link.target = "_blank";
-
-      const img = document.createElement("img");
-      img.src = file.thumbnailLink || "https://via.placeholder.com/150";
-      img.alt = file.name;
-      img.className = "w-full h-48 object-cover";
-
-      const caption = document.createElement("div");
-      caption.className = "p-2 text-center text-sm font-medium";
-      caption.innerText = file.name;
-
-      link.appendChild(img);
-      card.appendChild(link);
-      card.appendChild(caption);
-      gallery.appendChild(card);
-    });
+    allFiles = data.files || [];
+    renderGallery(allFiles);
   } catch (error) {
     gallery.innerHTML = `<p class='col-span-full text-center text-red-600'>Error al cargar archivos: ${error.message}</p>`;
   }
+}
+
+function renderGallery(files) {
+  const gallery = document.getElementById("gallery");
+  gallery.innerHTML = "";
+
+  if (files.length === 0) {
+    gallery.innerHTML = "<p class='col-span-full text-center'>No hay archivos para mostrar.</p>";
+    return;
+  }
+
+  files.forEach((file) => {
+    const card = document.createElement("div");
+    card.className = "bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200";
+
+    const link = document.createElement("a");
+    link.href = file.webViewLink;
+    link.target = "_blank";
+
+    const img = document.createElement("img");
+    img.src = file.thumbnailLink || "https://via.placeholder.com/150";
+    img.alt = file.name;
+    img.className = "w-full h-40 object-cover";
+
+    const caption = document.createElement("div");
+    caption.className = "p-2 text-center text-sm font-medium text-gray-700";
+    caption.innerText = file.name;
+
+    link.appendChild(img);
+    card.appendChild(link);
+    card.appendChild(caption);
+    gallery.appendChild(card);
+  });
 }
