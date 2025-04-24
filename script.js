@@ -1,6 +1,6 @@
 const CLIENT_ID = "36321363025-d2065951vh677c84bn1ofh4dko5fese2.apps.googleusercontent.com";
 const FOLDER_ID = "12W81Xq8P2o7HzHQ_sIYQKIAm7aqa3BX6"; // ID de la carpeta principal
-const SCOPES = "https://www.googleapis.com/auth/drive.readonly";
+const SCOPES = "https://www.googleapis.com/auth/drive.file";
 
 let tokenClient;
 let accessToken;
@@ -15,29 +15,98 @@ document.getElementById("back-to-calendar-button").addEventListener("click", () 
 });
 
 window.onload = () => {
-  // Intentamos obtener el token desde localStorage
   const storedToken = localStorage.getItem("google_access_token");
 
-  // Si el token ya está guardado, lo utilizamos
   if (storedToken) {
     accessToken = storedToken;
     loadFolders();
     document.getElementById("back-to-calendar-button").style.display = "inline-block";
   } else {
-    // Si no hay token, procedemos con la autenticación
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
       scope: SCOPES,
       callback: (tokenResponse) => {
-        // Guardamos el token en localStorage
         accessToken = tokenResponse.access_token;
-        localStorage.setItem("google_access_token", accessToken); // Guardamos el token en localStorage
+        localStorage.setItem("google_access_token", accessToken);
         loadFolders();
         document.getElementById("back-to-calendar-button").style.display = "inline-block";
       },
     });
   }
+
+  // Subir imagen cuando el formulario se envíe
+  document.getElementById("uploadImageForm").addEventListener("submit", uploadImage);
 };
+
+async function uploadImage(event) {
+  event.preventDefault();
+
+  const fileInput = document.getElementById("imageInput");
+  const file = fileInput.files[0];
+
+  if (!file) {
+    alert("Por favor, selecciona una imagen.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: buildRequestBody(file),
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      throw new Error(data.error.message);
+    }
+
+    const fileId = data.id;
+    await addFileToFolder(fileId);
+
+    document.getElementById("uploadStatus").innerHTML = `<p class="text-success">¡Imagen subida con éxito!</p>`;
+  } catch (error) {
+    console.error("Error al subir la imagen: ", error);
+    document.getElementById("uploadStatus").innerHTML = `<p class="text-danger">Hubo un error al subir la imagen.</p>`;
+  }
+}
+
+// Función para construir el cuerpo de la solicitud de subida
+function buildRequestBody(file) {
+  const metadata = {
+    name: file.name,
+    mimeType: file.type,
+    parents: [FOLDER_ID], // Aquí añadimos la carpeta donde vamos a guardar el archivo
+  };
+
+  const formData = new FormData();
+  formData.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
+  formData.append("file", file);
+
+  return formData;
+}
+
+// Función para añadir el archivo a la carpeta especificada
+async function addFileToFolder(fileId) {
+  const res = await fetch(
+    `https://www.googleapis.com/drive/v3/files/${fileId}?addParents=${FOLDER_ID}&fields=id,parents`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  const data = await res.json();
+  console.log("Archivo añadido a la carpeta: ", data);
+}
 
 async function loadFolders() {
   try {
@@ -52,7 +121,6 @@ async function loadFolders() {
     const data = await res.json();
     folders = data.files;
 
-    // Ordenamos las carpetas por fecha
     folders.sort((a, b) => {
       const dateA = parseDate(a.name);
       const dateB = parseDate(b.name);
@@ -67,7 +135,7 @@ async function loadFolders() {
 
 function parseDate(folderName) {
   const [day, month, year] = folderName.split(" ")[1].split("/").map(num => parseInt(num, 10));
-  return new Date(year, month - 1, day); // Month is 0-based in JavaScript
+  return new Date(year, month - 1, day);
 }
 
 function renderCalendar(folders) {
@@ -127,7 +195,6 @@ async function loadGallery(folderId) {
       fileGallery.appendChild(card);
     });
 
-    // Ocultamos el calendario y mostramos la galería
     document.getElementById("calendar").classList.add("d-none");
     document.getElementById("gallery").classList.remove("hidden");
   } catch (error) {
@@ -136,7 +203,6 @@ async function loadGallery(folderId) {
 }
 
 function showCalendar() {
-  // Mostramos la vista de calendario y ocultamos la galería
   document.getElementById("calendar").classList.remove("d-none");
   document.getElementById("gallery").classList.add("hidden");
 }
