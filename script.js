@@ -15,14 +15,24 @@ document.getElementById("back-button").addEventListener("click", () => {
 });
 
 window.onload = () => {
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
-    callback: (tokenResponse) => {
-      accessToken = tokenResponse.access_token;
-      loadFolders();
-    },
-  });
+  // Recuperar el token de localStorage si ya existe
+  const storedToken = localStorage.getItem("google_access_token");
+
+  if (storedToken) {
+    accessToken = storedToken;
+    loadFolders();
+  } else {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      callback: (tokenResponse) => {
+        accessToken = tokenResponse.access_token;
+        // Almacenar el token en localStorage
+        localStorage.setItem("google_access_token", accessToken);
+        loadFolders();
+      },
+    });
+  }
 };
 
 async function loadFolders() {
